@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs/promises');
 const uuid = require('./helpers/uuid');
+const dbData = require('./db/db.json');
 
 const PORT = 3001;
 
@@ -14,55 +15,53 @@ app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const dbData = require('./db/db.json');
-
+const dbFilePath = path.resolve(__dirname, './db/db.json');
 
 // HTML Routes
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, '/public/index.html')));
 
-app.get('/notes', (req, res) => res.sendFile(path.join(__dirname, '/notes.html')));
+app.get('/notes', (req, res) => res.sendFile(path.join(__dirname, '/public/notes.html')));
 
 // API routes
-app.get('/api/notes', (req, res) => {
-  return res.json(dbData);
+app.get('/api/notes', async (req, res) => {
+  try{
+    const data = await fs.readFile(dbFilePath, 'utf-8');
+    const notes = JSON.parse(data);
+
+    res.json(notes);
+
+  } catch(err) {
+    console.error('Unable to read db.json file', err);
+    res.status(500).send('Internal server error');
+  }
 });
 
-app.post('/api/notes', (req, res) => {
-  // Log that a POST request was received
-  console.info(`${req.method} request received to add a review`);
+app.post('/api/notes', async (req, res) => {
+  try {
+    const { title, text } = req.body;
 
-  // Destructuring assignment for the items in req.body
-  const { title, text } = req.body;
+    if (!title || !text) {
+      return res.status(400).json({ error: 'Title and text are required' });
+    }
 
-
-  if (title && text) {
     const newNote = {
       title,
       text,
       note_id: uuid(),
     };
-    const reviewString = JSON.stringify(newNote);
 
-    // Write the string to a file
-    fs.writeFile(`./db/${newNote.title}.json`, reviewString, (err) =>
-      err
-        ? console.error(err)
-        : console.log(
-            `Review for ${newNote.title} has been written to JSON file`
-          )
-    );
+    const data = await fs.readFile(dbFilePath, 'utf-8');
+    const notes = JSON.parse(data);
+    notes.push(newNote);
+    await fs.writeFile(dbFilePath, JSON.stringify(notes, null, 2));
 
-    const response = {
-      status: 'success',
-      body: newNote,
-    };
-
-    console.log(response);
-    res.status(201).json(response);
-  } else {
-    res.status(500).json('Error in posting review');
+    res.status(201).json(newNote);
+  } catch (err) {
+    console.error('Error adding note:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 app.listen(PORT, () =>
