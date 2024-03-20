@@ -42,7 +42,7 @@ app.post('/api/notes', async (req, res) => {
     const newNote = {
       title,
       text,
-      note_id: uuid(),
+      id: uuid(),
     };
 
     const data = await fs.readFile(dbFilePath, 'utf-8');
