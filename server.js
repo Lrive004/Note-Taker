@@ -18,7 +18,6 @@ app.use(express.urlencoded({ extended: true }));
 const dbFilePath = path.resolve(__dirname, './db/db.json');
 
 // HTML Routes
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, '/public/index.html')));
 
 app.get('/notes', (req, res) => res.sendFile(path.join(__dirname, '/public/notes.html')));
 
@@ -27,7 +26,7 @@ app.get('/api/notes', async (req, res) => {
   try{
     const data = await fs.readFile(dbFilePath, 'utf-8');
     const notes = JSON.parse(data);
-
+    
     res.json(notes);
 
   } catch(err) {
@@ -39,10 +38,6 @@ app.get('/api/notes', async (req, res) => {
 app.post('/api/notes', async (req, res) => {
   try {
     const { title, text } = req.body;
-
-    if (!title || !text) {
-      return res.status(400).json({ error: 'Title and text are required' });
-    }
 
     const newNote = {
       title,
@@ -62,8 +57,25 @@ app.post('/api/notes', async (req, res) => {
   }
 });
 
+app.get('/api/notes/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = await fs.readFile(dbFilePath, 'utf-8');
+    const notes = JSON.parse(data);
+    const note = notes.find(note => note.note_id === id);
+    res.json(note);
+  } catch (error) {
+    console.error('Error fetching note:', err);
+    res.status(500).json({ error: 'Internal server error' });
+
+  }
+});
+
+
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, '/public/index.html')));
 
 
 app.listen(PORT, () =>
   console.log(`App listening at http://localhost:${PORT}`)
 );
+
