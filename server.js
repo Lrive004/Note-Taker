@@ -62,12 +62,25 @@ app.get('/api/notes/:id', async (req, res) => {
     const id = req.params.id;
     const data = await fs.readFile(dbFilePath, 'utf-8');
     const notes = JSON.parse(data);
-    const note = notes.find(note => note.note_id === id);
+    const note = notes.find(note => note.id === id);
     res.json(note);
   } catch (error) {
     console.error('Error fetching note:', err);
     res.status(500).json({ error: 'Internal server error' });
 
+  }
+});
+app.delete('/api/notes/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = await fs.readFile(dbFilePath, 'utf-8');
+    let notes = JSON.parse(data);
+    notes = notes.filter(note => note.id !== id);
+    await fs.writeFile(dbFilePath, JSON.stringify(notes, null, 2));
+    res.status(204).send(); // No content is returned after successful deletion
+  } catch (error) {
+    console.error('Error deleting note:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
