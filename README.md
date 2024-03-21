@@ -1,6 +1,9 @@
 # Note-Taker
   ## Note taking application that allows saving and deleting of user created notes.
 
+  <img width="936" alt="image" src="https://github.com/Lrive004/miniature-eureka/assets/112648247/f30a7c7d-b018-4721-a5f9-16f1809de528">
+
+
   ## Table of Contents
   - [Installation](#installation)
   - [Usage](#usage)
