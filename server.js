@@ -5,7 +5,7 @@ const fs = require('fs/promises');
 const uuid = require('./helpers/uuid');
 const dbData = require('./db/db.json');
 
-const PORT = 3001;
+const port = process.env.PORT || 3001
 
 const app = express();
 
@@ -88,7 +88,7 @@ app.delete('/api/notes/:id', async (req, res) => {
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, '/public/index.html')));
 
 
-app.listen(PORT, () =>
-  console.log(`App listening at http://localhost:${PORT}`)
+app.listen(port, () =>
+  console.log(`App listening at http://localhost:${port}`)
 );
 
